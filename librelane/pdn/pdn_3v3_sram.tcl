@@ -1,8 +1,41 @@
-# SRAM macros
+# 3.3V SRAM macro PDN grids for the Run1 KianV macro placement.
+
+set sram_N {
+    i_chip_core.u_soc.cache_I.gen_cached.icache_I.cache_I.u_mem_way0.u_tile_0.u_prim
+    i_chip_core.u_soc.cache_I.gen_cached.icache_I.cache_I.u_mem_way0.u_tile_1.u_prim
+    i_chip_core.u_soc.cache_I.gen_cached.icache_I.cache_I.u_mem_way0.u_tile_2.u_prim
+    i_chip_core.u_soc.cache_I.gen_cached.icache_I.cache_I.u_mem_way0.u_tile_3.u_prim
+    i_chip_core.u_soc.cache_I.gen_cached.icache_I.cache_I.u_mem_way0.u_tile_4.u_prim
+}
+
+set sram_S {
+    i_chip_core.u_soc.cache_I.gen_cached.dcache_I.cache_D.u_mem.u_tile_0.u_prim
+    i_chip_core.u_soc.cache_I.gen_cached.icache_I.cache_I.u_mem_way1.u_tile_6.u_prim
+    i_chip_core.u_soc.cache_I.gen_cached.icache_I.cache_I.u_mem_way1.u_tile_5.u_prim
+    i_chip_core.u_soc.cache_I.gen_cached.icache_I.cache_I.u_mem_way1.u_tile_4.u_prim
+}
+
+set sram_W {
+    i_chip_core.u_soc.cache_I.gen_cached.dcache_I.cache_D.u_mem.u_tile_1.u_prim
+    i_chip_core.u_soc.cache_I.gen_cached.dcache_I.cache_D.u_mem.u_tile_2.u_prim
+    i_chip_core.u_soc.cache_I.gen_cached.dcache_I.cache_D.u_mem.u_tile_3.u_prim
+    i_chip_core.u_soc.cache_I.gen_cached.dcache_I.cache_D.u_mem.u_tile_4.u_prim
+    i_chip_core.u_soc.cache_I.gen_cached.dcache_I.cache_D.u_mem.u_tile_5.u_prim
+    i_chip_core.u_soc.cache_I.gen_cached.dcache_I.cache_D.u_mem.u_tile_6.u_prim
+}
+
+set sram_E {
+    i_chip_core.u_soc.cache_I.gen_cached.icache_I.cache_I.u_mem_way1.u_tile_3.u_prim
+    i_chip_core.u_soc.cache_I.gen_cached.icache_I.cache_I.u_mem_way1.u_tile_2.u_prim
+    i_chip_core.u_soc.cache_I.gen_cached.icache_I.cache_I.u_mem_way1.u_tile_1.u_prim
+    i_chip_core.u_soc.cache_I.gen_cached.icache_I.cache_I.u_mem_way1.u_tile_0.u_prim
+    i_chip_core.u_soc.cache_I.gen_cached.icache_I.cache_I.u_mem_way0.u_tile_6.u_prim
+    i_chip_core.u_soc.cache_I.gen_cached.icache_I.cache_I.u_mem_way0.u_tile_5.u_prim
+}
 
 define_pdn_grid \
     -macro \
-    -instances i_chip_core.sram_0 \
+    -instances "$sram_N $sram_S" \
     -name sram_macros_NS \
     -starts_with POWER \
     -halo "$::env(PDN_HORIZONTAL_HALO) $::env(PDN_VERTICAL_HALO)"
@@ -15,7 +48,6 @@ add_pdn_connect \
     -grid sram_macros_NS \
     -layers "$::env(PDN_VERTICAL_LAYER) Metal3"
 
-# Add stripes on W/E edges of SRAM
 add_pdn_stripe \
     -grid sram_macros_NS \
     -layer Metal4 \
@@ -26,8 +58,6 @@ add_pdn_stripe \
     -starts_with GROUND \
     -number_of_straps 2
 
-# Since the above stripes block the top level PDN at Metal4, add some more stripes
-# to improve the PDN's integrity and ensure a better connection for the macro.
 add_pdn_stripe \
     -grid sram_macros_NS \
     -layer Metal4 \
@@ -40,7 +70,7 @@ add_pdn_stripe \
 
 define_pdn_grid \
     -macro \
-    -instances i_chip_core.sram_1 \
+    -instances "$sram_W $sram_E" \
     -name sram_macros_WE \
     -starts_with POWER \
     -halo "$::env(PDN_HORIZONTAL_HALO) $::env(PDN_VERTICAL_HALO)"
@@ -53,7 +83,6 @@ add_pdn_connect \
     -grid sram_macros_WE \
     -layers "$::env(PDN_VERTICAL_LAYER) Metal3"
 
-# Add stripes on W/E edges of SRAM
 add_pdn_stripe \
     -grid sram_macros_WE \
     -layer Metal4 \
@@ -64,8 +93,6 @@ add_pdn_stripe \
     -starts_with POWER \
     -number_of_straps 2
 
-# Since the above stripes block the top level PDN at Metal4, add some more stripes
-# to improve the PDN's integrity and ensure a better connection for the macro.
 add_pdn_stripe \
     -grid sram_macros_WE \
     -layer Metal4 \

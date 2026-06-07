@@ -9,6 +9,8 @@ module chip_top #(
     // Power/ground pads for core and I/O
     parameter NUM_DVDD_PADS = `NUM_DVDD_PADS,
     parameter NUM_DVSS_PADS = `NUM_DVSS_PADS,
+    parameter NUM_VDD_PADS = `NUM_VDD_PADS,
+    parameter NUM_VSS_PADS = `NUM_VSS_PADS,
 
     // Signal pads
     parameter NUM_INPUT_PADS = `NUM_INPUT_PADS,
@@ -18,6 +20,8 @@ module chip_top #(
 `ifdef USE_POWER_PINS
     inout  wire VDD,
     inout  wire VSS,
+    inout  wire DVDD,
+    inout  wire DVSS,
 `endif
 
     inout  wire       clk_PAD,
@@ -29,6 +33,7 @@ module chip_top #(
     // ============================================================
     // Internal pad-side nets
     // ============================================================
+    wire clk_PAD2CORE_raw;
     wire clk_PAD2CORE;
     wire rst_n_PAD2CORE;
     wire rst_n_sync;
@@ -56,10 +61,11 @@ module chip_top #(
     generate
         for (genvar i = 0; i < NUM_DVDD_PADS; i++) begin : dvdd_pads
             (* keep *)
-            gf180mcu_ws_io__dvdd pad (
+            gf180mcu_ocd_io__dvdd pad (
             `ifdef USE_POWER_PINS
-                .DVDD   (VDD),
-                .DVSS   (VSS),
+                .DVDD   (DVDD),
+                .DVSS   (DVSS),
+                .VDD    (VDD),
                 .VSS    (VSS)
             `endif
             );
@@ -67,14 +73,40 @@ module chip_top #(
 
         for (genvar i = 0; i < NUM_DVSS_PADS; i++) begin : dvss_pads
             (* keep *)
-            gf180mcu_ws_io__dvss pad (
+            gf180mcu_ocd_io__dvss pad (
             `ifdef USE_POWER_PINS
-                .DVDD   (VDD),
-                .DVSS   (VSS),
+                .DVDD   (DVDD),
+                .DVSS   (DVSS),
+                .VSS    (VSS),
                 .VDD    (VDD)
             `endif
             );
         end
+
+        for (genvar i = 0; i < NUM_VDD_PADS; i++) begin : vdd_pads
+            (* keep *)
+            gf180mcu_ocd_io__vdd pad (
+            `ifdef USE_POWER_PINS
+                .DVDD   (DVDD),
+                .DVSS   (DVSS),
+                .VDD    (VDD),
+                .VSS    (VSS)
+            `endif
+            );
+        end
+
+        for (genvar i = 0; i < NUM_VSS_PADS; i++) begin : vss_pads
+            (* keep *)
+            gf180mcu_ocd_io__vss pad (
+            `ifdef USE_POWER_PINS
+                .DVDD   (DVDD),
+                .DVSS   (DVSS),
+                .VDD    (VDD),
+                .VSS    (VSS)
+            `endif
+            );
+        end
+
     endgenerate
 
     // ============================================================
@@ -82,26 +114,38 @@ module chip_top #(
     // ============================================================
 
     // Clock pad: Schmitt trigger input
-    gf180mcu_fd_io__in_s clk_pad (
+    gf180mcu_ocd_io__in_s clk_pad (
     `ifdef USE_POWER_PINS
-        .DVDD   (VDD),
-        .DVSS   (VSS),
+        .DVDD   (DVDD),
+        .DVSS   (DVSS),
         .VDD    (VDD),
         .VSS    (VSS),
     `endif
 
-        .Y      (clk_PAD2CORE),
+        .Y      (clk_PAD2CORE_raw),
         .PAD    (clk_PAD),
 
         .PU     (1'b0),
         .PD     (1'b0)
     );
 
-    // Reset pad: normal CMOS input
-    gf180mcu_fd_io__in_c rst_n_pad (
+    gf180mcu_as_sc_mcu7t3v3__clkbuff_12 clk_core_clock_buffer (
     `ifdef USE_POWER_PINS
-        .DVDD   (VDD),
-        .DVSS   (VSS),
+        .VPW    (VSS),
+        .VNW    (VDD),
+        .VDD    (VDD),
+        .VSS    (VSS),
+    `endif
+
+        .A      (clk_PAD2CORE_raw),
+        .Y      (clk_PAD2CORE)
+    );
+
+    // Reset pad: normal CMOS input
+    gf180mcu_ocd_io__in_c rst_n_pad (
+    `ifdef USE_POWER_PINS
+        .DVDD   (DVDD),
+        .DVSS   (DVSS),
         .VDD    (VDD),
         .VSS    (VSS),
     `endif
@@ -126,16 +170,31 @@ module chip_top #(
             wire pd_and_rst = bidir_CORE2PAD_PD_raw[i] & rst_n_sync;
 
             falsepath_anchor u_oe (
+            `ifdef USE_POWER_PINS
+                .VDD (VDD),
+                .VSS (VSS),
+            `endif
+
                 .i (oe_and_rst),
                 .z (bidir_CORE2PAD_OE[i])
             );
 
             falsepath_anchor u_pu (
+            `ifdef USE_POWER_PINS
+                .VDD (VDD),
+                .VSS (VSS),
+            `endif
+
                 .i (pu_and_rst),
                 .z (bidir_CORE2PAD_PU[i])
             );
 
             falsepath_anchor u_pd (
+            `ifdef USE_POWER_PINS
+                .VDD (VDD),
+                .VSS (VSS),
+            `endif
+
                 .i (pd_and_rst),
                 .z (bidir_CORE2PAD_PD[i])
             );
@@ -145,10 +204,10 @@ module chip_top #(
     generate
         for (genvar i = 0; i < NUM_BIDIR_PADS; i++) begin : bidir
             (* keep *)
-            gf180mcu_fd_io__bi_24t pad (
+            gf180mcu_ocd_io__bi_24t pad (
             `ifdef USE_POWER_PINS
-                .DVDD   (VDD),
-                .DVSS   (VSS),
+                .DVDD   (DVDD),
+                .DVSS   (DVSS),
                 .VDD    (VDD),
                 .VSS    (VSS),
             `endif
@@ -195,31 +254,35 @@ module chip_top #(
     // Fixed macros
     // ============================================================
 
-    // Chip ID - do not remove, necessary for tapeout
-    (* keep *)
-    gf180mcu_ws_ip__id chip_id ();
-
-    // wafer.space logo - can be removed
-    (* keep *)
-    gf180mcu_ws_ip__logo wafer_space_logo ();
-
-    (* keep *)
-    gf180mcu_ws_ip__names names ();
-
-    (* keep *)
-    gf180mcu_ws_ip__credits credits ();
+    // Required tapeout markers.
+    (* keep *) gf180mcu_ws_ip__qrcode_id qrcode_id ();
+    (* keep *) gf180mcu_ws_ip__shuttle_id shuttle_id ();
+    (* keep *) gf180mcu_ws_ip__project_id project_id ();
+    (* keep *) gf180mcu_ws_ip__marker marker ();
 
 endmodule
 
 // RISCBoy-180 style
 module falsepath_anchor (
+`ifdef USE_POWER_PINS
+    inout  wire VDD,
+    inout  wire VSS,
+`endif
+
     input  wire i,
     output wire z
 );
     (* keep *)
-    gf180mcu_fd_sc_mcu9t5v0__clkbuf_1 magic_falsepath_anchor_u (
-        .I (i),
-        .Z (z)
+    gf180mcu_as_sc_mcu7t3v3__buff_2 falsepath_anchor_u (
+    `ifdef USE_POWER_PINS
+        .VPW    (VSS),
+        .VNW    (VDD),
+        .VDD    (VDD),
+        .VSS    (VSS),
+    `endif
+
+        .A      (i),
+        .Y      (z)
     );
 endmodule
 

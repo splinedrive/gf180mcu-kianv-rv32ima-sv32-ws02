@@ -138,7 +138,6 @@ if { $::env(PDN_CORE_RING) == 1 } {
         set arg_list [list]
         append_if_flag arg_list PDN_CORE_RING_ALLOW_OUT_OF_DIE -allow_out_of_die
         append_if_flag arg_list PDN_CORE_RING_CONNECT_TO_PADS -connect_to_pads
-        #append_if_equals arg_list PDN_EXTEND_TO "boundary" -extend_to_boundary
         append_if_exists_argument arg_list PDN_CORE_RING_CONNECT_TO_PAD_LAYERS -connect_to_pad_layers
 
         set pdn_core_vertical_layer $::env(PDN_VERTICAL_LAYER)
@@ -160,18 +159,6 @@ if { $::env(PDN_CORE_RING) == 1 } {
             -core_offset "$::env(PDN_CORE_RING_VOFFSET) $::env(PDN_CORE_RING_HOFFSET)" \
             {*}$arg_list
 
-        #if { [info exists ::env(PDN_CORE_VERTICAL_LAYER)] } {
-        #    add_pdn_connect \
-        #        -grid stdcell_grid \
-        #        -layers "$::env(PDN_CORE_VERTICAL_LAYER) $::env(PDN_HORIZONTAL_LAYER)"
-        #}
-
-        #if { [info exists ::env(PDN_CORE_HORIZONTAL_LAYER)] } {
-        #    add_pdn_connect \
-        #        -grid stdcell_grid \
-        #        -layers "$::env(PDN_CORE_HORIZONTAL_LAYER) $::env(PDN_VERTICAL_LAYER)"
-        #}
-
         if { [info exists ::env(PDN_CORE_VERTICAL_LAYER)] && [info exists ::env(PDN_CORE_HORIZONTAL_LAYER)] } {
             add_pdn_connect \
                 -grid stdcell_grid \
@@ -181,7 +168,7 @@ if { $::env(PDN_CORE_RING) == 1 } {
         add_pdn_connect \
             -grid stdcell_grid \
             -layers "$::env(PDN_CORE_VERTICAL_LAYER) Metal2"
-        
+
         add_pdn_connect \
             -grid stdcell_grid \
             -layers "$::env(PDN_CORE_HORIZONTAL_LAYER) Metal2"
@@ -191,27 +178,4 @@ if { $::env(PDN_CORE_RING) == 1 } {
     }
 }
 
-define_pdn_grid \
-    -macro \
-    -default \
-    -name macro \
-    -starts_with POWER \
-    -halo "$::env(PDN_HORIZONTAL_HALO) $::env(PDN_VERTICAL_HALO)"
-
-add_pdn_connect \
-    -grid macro \
-    -layers "$::env(PDN_VERTICAL_LAYER) $::env(PDN_HORIZONTAL_LAYER)"
-
-puts "$::env(SRAM_DEFINE)"
-if { [info exists ::env(SRAM_DEFINE)] } {
-    if {$::env(SRAM_DEFINE) == "SRAM_gf180mcu_ocd_ip_sram"} {
-        # Config for 3V3 SRAM
-        source [file join [file dirname [info script]] "pdn_3v3_sram.tcl"]
-    } else {
-        # Config for 5V SRAM
-        source [file join [file dirname [info script]] "pdn_5v_sram.tcl"]
-    }
-} else {
-    # Config for 5V SRAM
-    source [file join [file dirname [info script]] "pdn_5v_sram.tcl"]
-}
+source [file join [file dirname [info script]] "pdn_3v3_sram.tcl"]

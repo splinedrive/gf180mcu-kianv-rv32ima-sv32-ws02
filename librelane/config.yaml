@@ -2,181 +2,179 @@ meta:
   version: 3
   flow: Chip
   substituting_steps:
-
-    # Render the layout after sealring insertion
     KLayout.Render: null
     +KLayout.SealRing: KLayout.Render
-
-    # Disable KLayout DRC
-    #KLayout.DRC: null
-    #Checker.KLayoutDRC: null
-
-    # Disable KLayout antenna check
-    #KLayout.Antenna: null
-    #Checker.KLayoutAntenna: null
-
-    # Disable KLayout density check
-    #KLayout.Density: null
-    #Checker.KLayoutDensity: null
-
-    # Save time during development
-    # Enable for sign-off
-    #OpenROAD.IRDropReport: null
-    #Magic.DRC: null
-    #Checker.MagicDRC: null
-    #KLayout.XOR: null
-    #Netgen.LVS: null
-    #Checker.LVS: null
-
 DESIGN_NAME: chip_top
 VERILOG_FILES:
-- dir::../src/chip_top.sv
 - dir::../src/chip_core.sv
-
-# Enable plugin for better SystemVerilog support
-# USE_SLANG: True
-# SLANG_ARGUMENTS: ['--keep-hierarchy']
-
-# Slightly smaller file sizes
+- dir::../src/chip_top.sv
+- dir::../src/cache.v
+- dir::../src/cache_sram_D$.v
+- dir::../src/cache_sram_I$.v
+- dir::../src/clint.v
+- dir::../src/dcache.v
+- dir::../src/fifo.v
+- dir::../src/gf180mcu_fd_ip_sram__sram512x8m8wm1_wrapper.v
+- dir::../src/gpio.v
+- dir::../src/icache.v
+- dir::../src/plic.v
+- dir::../src/rx_uart.v
+- dir::../src/sdram/mt48lc16m16a2_ctrl.v
+- dir::../src/soc.v
+- dir::../src/spi.v
+- dir::../src/spi_nor_flash.v
+- dir::../src/sram_sp.v
+- dir::../src/sram_sp_gf180_512x56.v
+- dir::../src/tx_uart.v
+- dir::../src/kianv_harris_edition/alu.v
+- dir::../src/kianv_harris_edition/alu_decoder.v
+- dir::../src/kianv_harris_edition/associative_cache.v
+- dir::../src/kianv_harris_edition/control_unit.v
+- dir::../src/kianv_harris_edition/csr_decoder.v
+- dir::../src/kianv_harris_edition/csr_exception_handler.v
+- dir::../src/kianv_harris_edition/csr_unit.v
+- dir::../src/kianv_harris_edition/datapath_unit.v
+- dir::../src/kianv_harris_edition/design_elements.v
+- dir::../src/kianv_harris_edition/design_elements_fpgacpu_ca.v
+- dir::../src/kianv_harris_edition/divider.v
+- dir::../src/kianv_harris_edition/divider_decoder.v
+- dir::../src/kianv_harris_edition/extend.v
+- dir::../src/kianv_harris_edition/interrupt_controller.v
+- dir::../src/kianv_harris_edition/kianv_harris_mc_edition.v
+- dir::../src/kianv_harris_edition/load_alignment.v
+- dir::../src/kianv_harris_edition/load_decoder.v
+- dir::../src/kianv_harris_edition/main_fsm.v
+- dir::../src/kianv_harris_edition/multiplier.v
+- dir::../src/kianv_harris_edition/multiplier_decoder.v
+- dir::../src/kianv_harris_edition/multiplier_extension_decoder.v
+- dir::../src/kianv_harris_edition/register_file.v
+- dir::../src/kianv_harris_edition/store_alignment.v
+- dir::../src/kianv_harris_edition/store_decoder.v
+- dir::../src/kianv_harris_edition/sv32.v
+- dir::../src/kianv_harris_edition/sv32_table_walk.v
+- dir::../src/kianv_harris_edition/sv32_translate_data_to_physical.v
+- dir::../src/kianv_harris_edition/sv32_translate_instruction_to_physical.v
 PRIMARY_GDSII_STREAMOUT_TOOL: klayout
-
-# SDC files
 PNR_SDC_FILE: dir::chip_top.sdc
 SIGNOFF_SDC_FILE: dir::chip_top.sdc
 FALLBACK_SDC: dir::chip_top.sdc
-
-# Power / ground nets
 VDD_NETS:
 - VDD
 GND_NETS:
 - VSS
-
-# We need to add gf180mcu_fd_io__bi_24t
-# due to the unused Y output for output only pads
 IGNORE_DISCONNECTED_MODULES:
-- gf180mcu_fd_io__bi_24t
+- gf180mcu_ocd_io__bi_24t
 - gf180mcu_ws_ip__qrcode_id
 - gf180mcu_ws_ip__shuttle_id
 - gf180mcu_ws_ip__project_id
-- gf180mcu_ws_ip__logo
 - gf180mcu_ws_ip__marker
-
-# Clock
 CLOCK_PORT: clk_PAD
-CLOCK_NET: clk_pad/Y
-CLOCK_PERIOD: 40 # 25 MHz
-
-# Overfix hold violations
-PL_RESIZER_HOLD_SLACK_MARGIN: 0.35
-GRT_RESIZER_HOLD_SLACK_MARGIN: 0.3
-
-# Increase density for more 
-# logic on your die
-PL_TARGET_DENSITY_PCT: 35
+CLOCK_NET: clk_core_clock_buffer/Y
+CLOCK_PERIOD: 33
+PL_RESIZER_HOLD_SLACK_MARGIN: 0.6
+GRT_RESIZER_HOLD_SLACK_MARGIN: 0.5
+PL_TARGET_DENSITY_PCT: 30.2
 GRT_ALLOW_CONGESTION: true
-
-# Allow a larger Y displacement
-PL_MAX_DISPLACEMENT_Y: 200
-
-# Fix antenna violations after DRT
+PL_MAX_DISPLACEMENT_Y: 500
 DRT_ANTENNA_REPAIR_ITERS: 10
-DRT_ANTENNA_REPAIR_MARGIN: 10 # %
-
-# PDN
+DRT_ANTENNA_REPAIR_MARGIN: 10
 PDN_CFG: dir::pdn/pdn_cfg.tcl
-PDN_ENABLE_PINS: False
-
-# PDN - Straps
+PDN_ENABLE_PINS: false
 PDN_VWIDTH: 5
 PDN_HWIDTH: 5
 PDN_VSPACING: 1
 PDN_HSPACING: 1
 PDN_VPITCH: 75
 PDN_HPITCH: 75
-
-# PDN - Core ring
-PDN_CORE_RING: True
-# Maximum metal width without slotting: 30um
+PDN_CORE_RING: true
 PDN_CORE_RING_VWIDTH: 25
 PDN_CORE_RING_HWIDTH: 25
-PDN_CORE_RING_CONNECT_TO_PADS: True
+PDN_CORE_RING_CONNECT_TO_PADS: true
 PDN_CORE_VERTICAL_LAYER: Metal4
 PDN_CORE_HORIZONTAL_LAYER: Metal3
-PDN_CORE_RING_CONNECT_TO_PAD_LAYERS: [Metal2]
-
-# Do not error on magic DRC violations
-# Note: Passing magic DRC is not required for the submission.
-# However, it is recommended to fix or carefully review all violations.
-ERROR_ON_MAGIC_DRC: False
-
-# Prevent false positive DRC errors in I/O cells
+PDN_CORE_RING_CONNECT_TO_PAD_LAYERS:
+- Metal2
+ERROR_ON_MAGIC_DRC: false
 MAGIC_GDS_FLATGLOB:
-# For contacts
-- "*_CDNS_*"
-# Foundry provided SRAMs
-- "*$$*"
-- "M1_N*"
-- "M1_P*"
-- "M2_M1*"
-- "M3_M2*"
-- "nmos_5p0*"
-- "nmos_1p2*"
-- "pmos_5p0*"
-- "pmos_1p2*"
-- "via1_*"
-- "ypass_gate*"
-- "G_ring_*"
-# These additional cells must be flattened to get rid of 3.3V devices
-# (DUALGATE drawn into high-level cells)
-- "dcap_103*"
-- "din_*"
-- "mux821_*"
-- "rdummy_*"
-- "pmoscap_*"
-- "xdec_*"
-- "ypredec*"
-- "xpredec*"
-- "prexdec_*"
-- "xdec8_*"
-- "xdec16_*"
-- "xdec32_*"
-- "sa_*"
-
-# Since we cannot meet the minimum density limit on Metal2,
-# ignore active metal on previous and subsequent layers
-# (DM.5_DM.7 and DM.4_DM.6). Dummy metal is moved to active
-# metal during the precheck.
+- '*_CDNS_*'
+- '*$$*'
+- M1_N*
+- M1_P*
+- M2_M1*
+- M3_M2*
+- nmos_5p0*
+- nmos_1p2*
+- pmos_5p0*
+- pmos_1p2*
+- via1_*
+- ypass_gate*
+- G_ring_*
+- dcap_103*
+- din_*
+- mux821_*
+- rdummy_*
+- pmoscap_*
+- xdec_*
+- ypredec*
+- xpredec*
+- prexdec_*
+- xdec8_*
+- xdec16_*
+- xdec32_*
+- sa_*
 KLAYOUT_FILLER_OPTIONS:
   Metal2_ignore_active: true
-
-# Because we have multiple power pads for one power domain
 MAGIC_EXT_UNIQUE: notopports
-
-# Image render settings
 KLAYOUT_RENDER_RESOLUTION: 2048
 KLAYOUT_RENDER_OVERSAMPLING: 3
 KLAYOUT_PROPERTIES: dir::gf180mcu_render.lyp
-
-# DRC settings
-# A high number of workers increases RAM usage,
-# but can significantly improve the performance.
-# workers * threads should equal the available
-# hardware threads for a best possible utilization.
-
 KLAYOUT_DRC_THREADS: 1
-
-# "max" equals max hardware threads
 KLAYOUT_DRC_OPTIONS:
-  decks: "all,-antenna,-density,-cup" # disable CUP for now
+  decks: all,-antenna,-density,-cup
   variant: ref::$PDK
   workers: max
-
 KLAYOUT_DENSITY_OPTIONS:
-  decks: "density"
+  decks: density
   variant: ref::$PDK
   workers: max
-
 KLAYOUT_ANTENNA_OPTIONS:
-  decks: "antenna"
+  decks: antenna
   variant: ref::$PDK
   workers: max
+VERILOG_DEFINES:
+- SYSTEM_CLK=20000000
+- TRP_NS=15
+- TRCD_NS=15
+- TRFC_NS=66
+- TWR_NS=15
+- CAS=2
+- TREFI_NS=7800
+- SDRAM_SIZE=33554432
+- NUM_ENTRIES_ITLB=32
+- NUM_ENTRIES_DTLB=32
+- SYNTHESIS
+- GF180
+- BYPASS_CACHES=1'b0
+- SLOT_1X1
+VERILOG_POWER_DEFINE: USE_POWER_PINS
+PAD_PLACE_IO_TERMINALS:
+- gf180mcu_ocd_io__asig_5p0/ASIG5V
+- gf180mcu_ocd_io__bi_24t/PAD
+- gf180mcu_ocd_io__bi_t/PAD
+- gf180mcu_ocd_io__in_c/PAD
+- gf180mcu_ocd_io__in_s/PAD
+- gf180mcu_ocd_io__dvss/DVSS
+- gf180mcu_ocd_io__dvdd/DVDD
+- gf180mcu_ocd_io__vss/VSS
+- gf180mcu_ocd_io__vdd/VDD
+PL_MAX_DISPLACEMENT_X: 800
+LVS_FLATTEN_CELLS:
+- gf180mcu_ws_ip__qrcode_id
+- gf180mcu_ws_ip__shuttle_id
+- gf180mcu_ws_ip__project_id
+- gf180mcu_ws_ip__marker
+MAGIC_EXT_ABSTRACT_CELLS:
+- gf180mcu_ws_ip__qrcode_id
+- gf180mcu_ws_ip__shuttle_id
+- gf180mcu_ws_ip__project_id
+- gf180mcu_ws_ip__marker

@@ -7,43 +7,13 @@ PDK_ROOT ?= $(MAKEFILE_DIR)/gf180mcu
 PDK ?= gf180mcuD
 PDK_COMMIT ?= 9233c19260cd813c3fa67dd4594fe4cc67016832
 
-# Available SCL libraries:
-# gf180mcu_as_sc_mcu7t3v3
-# gf180mcu_fd_sc_mcu7t5v0
-# gf180mcu_fd_sc_mcu9t5v0
-# gf180mcu_osu_sc_gp9t3v3 (broken)
-# gf180mcu_osu_sc_gp12t3v3 (broken)
+# This project is fixed to the 3.3V library set.
+override SCL := gf180mcu_as_sc_mcu7t3v3
+override PAD := gf180mcu_ocd_io
+override SRAM := gf180mcu_ocd_ip_sram
+MACROS = 3v3
 
-ifeq ($(SCL),default)
-    SCL = gf180mcu_fd_sc_mcu7t5v0
-endif
-SCL ?= gf180mcu_fd_sc_mcu7t5v0
-
-# Available PAD libraries:
-# gf180mcu_fd_io
-# gf180mcu_ocd_io
-
-ifeq ($(PAD),default)
-    PAD = gf180mcu_fd_io
-endif
-PAD ?= gf180mcu_fd_io
-
-# Available SRAM macros:
-# gf180mcu_fd_ip_sram
-# gf180mcu_ocd_ip_sram
-
-ifeq ($(SRAM),default)
-    SRAM = gf180mcu_fd_ip_sram
-endif
-SRAM ?= gf180mcu_fd_ip_sram
-
-ifeq ($(SRAM),gf180mcu_fd_ip_sram)
-    MACROS = 5v
-else
-    MACROS = 3v3
-endif
-
-AVAILABLE_SLOTS = 1x1 0p5x1 1x0p5 0p5x0p5
+AVAILABLE_SLOTS = 1x1
 DEFAULT_SLOT = 1x1
 
 # Slot can be any of AVAILABLE_SLOTS

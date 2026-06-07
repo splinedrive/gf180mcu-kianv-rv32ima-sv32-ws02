@@ -37,7 +37,7 @@ module gf180mcu_fd_ip_sram__sram512x8m8wm1_wrapper (
 `ifdef GF180
 
   (* keep *)
-  gf180mcu_fd_ip_sram__sram512x8m8wm1 u_prim (
+  gf180mcu_ocd_ip_sram__sram512x8m8wm1 u_prim (
 `ifdef USE_POWER_PINS
       .VDD (VDD),
       .VSS (VSS),
@@ -79,4 +79,3 @@ module gf180mcu_fd_ip_sram__sram512x8m8wm1_wrapper (
 endmodule
 
 `default_nettype wire
-
